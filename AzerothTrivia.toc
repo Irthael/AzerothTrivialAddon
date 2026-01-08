@@ -1,0 +1,16 @@
+## Interface: 110207, 120000,120001
+## Title: Azeroth Trivia
+## Notes: World of Warcraft Trivia Addon. Write /at to open trivia.
+## Author: Irthael
+## Version: 1.0
+## SavedVariables: AzerothTriviaDB
+
+Locales\enUS.lua
+Locales\esES.lua
+AT_Questions.lua
+
+AzerothTrivia.lua
+AT_Multiplayer.lua
+AT_MultiplayerUI.lua
+AT_Options.lua
+AT_Minimap.lua
