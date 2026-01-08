@@ -1,7 +1,7 @@
 local addonName, AT = ...
 local L = setmetatable({}, {
     __index = function(t, k)
-        return k -- Devuelve la clave si no hay traducción, ideal para inglés
+        return k 
     end
 })
 

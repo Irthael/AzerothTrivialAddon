@@ -118,8 +118,8 @@ progressText:SetText("")
 MP.ProgressText = progressText
 
 local qText = gameFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-qText:SetPoint("TOP", 0, -45) -- Ajustado a -45 para un punto medio ideal
-qText:SetSize(280, 180) -- Restaurado el alto para mejor legibilidad
+qText:SetPoint("TOP", 0, -45) 
+qText:SetSize(280, 180) 
 qText:SetJustifyH("CENTER")
 qText:SetJustifyV("TOP")
 qText:SetText(AT.L["Waiting for question..."])
@@ -185,7 +185,7 @@ function MP:InitGameUI()
     btnPlayAgain:Hide()
     if MP.IsLeader then
         btnEndGame:Show()
-        btnEndGame:Disable() -- Disabled during preparation
+        btnEndGame:Disable()
     else
         btnEndGame:Hide()
     end
@@ -203,7 +203,7 @@ function MP:OnQuestionReceived(parts)
     end
 
     if MP.IsLeader then
-        btnEndGame:Enable() -- Enable when first question loads
+        btnEndGame:Enable()
     end
 
     local qType = qData.type or "text"
@@ -246,7 +246,6 @@ function MP:OnQuestionReceived(parts)
         {text = locData.false_3, originalIndex = 4}
     }
     
-    -- Shuffle locally
     AT:ShuffleTable(answers)
 
     local currentIndex = tonumber(parts[4])
@@ -283,7 +282,6 @@ function MP:ShowResult(correctIndex, winnerName, remaining)
     remaining = remaining or 10
     AT:StopCurrentSound()
     
-    -- Always show qText and hide audio when showing results
     qText:Show()
     btnPlayAudio:Hide()
     

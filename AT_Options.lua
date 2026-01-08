@@ -108,10 +108,10 @@ local function CreateQuestionTypeCheck(name, label, key, anchor)
             end
             
             if not self:GetChecked() and count <= 1 then
-                -- Prevent unchecking the last one
+                
                 self:SetChecked(true)
                 UIErrorsFrame:AddMessage(AT.L["You must have at least one question type selected!"], 1.0, 0.1, 0.1, 1.0)
-                PlaySound(847, "Master") -- Igsh_Error sound
+                PlaySound(847, "Master")
             else
                 AT.db.allowedTypes[key] = self:GetChecked()
             end

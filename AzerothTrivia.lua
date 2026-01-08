@@ -153,7 +153,6 @@ function AT:GetLocaleData(qData)
     if qData[loc] then
         return qData[loc]
     end
-    -- Fallback to enUS if preferred locale is missing
     return qData["enUS"] or qData
 end
 

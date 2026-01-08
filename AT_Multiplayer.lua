@@ -47,7 +47,7 @@ mpFrame:SetScript("OnEvent", function(self, event, ...)
         if MP.CurrentState ~= MP.GameState.IDLE and not IsInGroup() then
             MP:Leave()
         elseif MP.CurrentState ~= MP.GameState.IDLE and MP.LeaderName then
-            -- Verificamos si el líder sigue en el grupo
+
             local leaderFound = false
             for i=1, _G.GetNumGroupMembers() do
                 local name = _G.GetRaidRosterInfo(i)
@@ -95,7 +95,6 @@ local CommandHandlers = {
             if not exists then
                 table.insert(MP.LobbyMembers, joinedPlayer)
                 
-                -- Inicializar puntuación para el nuevo jugador si no existe
                 local cleanJoiner = string.match(joinedPlayer, "([^%-]+)")
                 if MP.Scores and not MP.Scores[cleanJoiner] then
                     MP.Scores[cleanJoiner] = 0
@@ -109,7 +108,6 @@ local CommandHandlers = {
                     local totalAnswer = AT.db.answerTime or 30
                     local remaining = math.max(1, totalAnswer - elapsed)
                     
-                    -- Update LastQMsg with actual remaining time for the joiner
                     local qParts = { strsplit(";", MP.LastQMsg) }
                     local joinMsg = string.format("QUESTION;%s;%d;%s;%s", qParts[2] or "0", math.floor(remaining), qParts[4] or "1", qParts[5] or "1")
                     
@@ -249,7 +247,6 @@ function MP:StartGame()
     if not MP.IsLeader then return end
     MP:ClearTimers()
     
-    -- Calculate TotalQuestions based on settings and available questions
     local qDB = AT.QuestionDB
     local availableCount = 0
     local allowed = (AT.db and AT.db.allowedTypes) or {text = true, voice = true, music = true}
