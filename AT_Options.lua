@@ -176,4 +176,4 @@ end)
 
 local authorText = optionsPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 authorText:SetPoint("BOTTOMLEFT", 16, 16)
-authorText:SetText("Addon created by Irthael- DunModr")
+authorText:SetText("Addon created by Irthael- DunModr - |cff00ff00v" .. (AT.Version or "1.0.2") .. "|r")

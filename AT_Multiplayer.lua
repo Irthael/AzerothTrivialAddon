@@ -20,12 +20,37 @@ MP.TotalQuestions = 10
 MP.CurrentQuestionIndex = 0
 MP.Scores = {}
 MP.ActiveButtons = true
-MP.LeaderName = nil
 MP.LastQMsg = nil
+MP.lastWarningTime = 0
+
+local function CompareVersions(v1, v2)
+    local a = { strsplit(".", v1) }
+    local b = { strsplit(".", v2) }
+    for i = 1, math.max(#a, #b) do
+        local n1 = tonumber(a[i]) or 0
+        local n2 = tonumber(b[i]) or 0
+        if n1 > n2 then return 1 end
+        if n1 < n2 then return -1 end
+    end
+    return 0
+end
+
+function MP:ShowVersionWarning()
+    local now = GetTime()
+    -- Solo mostrar el mensaje si han pasado más de 60 segundos desde el último aviso
+    if (now - (MP.lastWarningTime or 0)) < 60 then return end
+    MP.lastWarningTime = now
+    
+    local versionText = string.format(AT.L["Your version is: %s"], "|cffff0000" .. AT.Version .. "|r")
+    _G.print("|cffff0000Azeroth Trivia: " .. AT.L["An inferior version of Azeroth Trivia has been detected, please update."] .. " " .. versionText .. "|r")
+end
+
+
 
 local mpFrame = CreateFrame("Frame")
 mpFrame:RegisterEvent("CHAT_MSG_ADDON")
 mpFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+mpFrame:RegisterEvent("GROUP_JOINED")
 
 function MP:Send(msg)
     if IsInGroup() then
@@ -61,6 +86,11 @@ mpFrame:SetScript("OnEvent", function(self, event, ...)
                 _G.print("|cffff0000Azeroth Trivia: " .. AT.L["Leader has left the group. Game ended."] .. "|r")
             end
         end
+    elseif event == "GROUP_JOINED" then
+        -- Cuando nos unimos a un grupo, avisamos de nuestra versión
+        C_Timer.After(2, function()
+            MP:Send("VERSION_CHECK;" .. AT.Version)
+        end)
     end
 end)
 
@@ -82,7 +112,38 @@ local CommandHandlers = {
     ["INVITE"] = function(parts, sender)
         if sender ~= UnitName("player") then 
              if AT.db and AT.db.blockInvites then return end
+             
+             local hostVersion = parts[2]
+             if hostVersion and hostVersion ~= AT.Version then
+                 local comp = CompareVersions(AT.Version, hostVersion)
+                 local color = (comp == -1) and "|cffff0000" or "|cff00ff00"
+                 local versionText = string.format(AT.L["Your version is: %s"], color .. AT.Version .. "|r")
+                 
+                 _G.print("|cffff0000Azeroth Trivia: " .. AT.L["You cannot join this game because your version does not match the host's version."] .. " (".. (hostVersion or "?.?.?") ..") " .. versionText .. "|r")
+                 return
+             end
+             
              StaticPopup_Show("AT_MP_INVITE", sender, nil, sender)
+        end
+    end,
+    ["VERSION_CHECK"] = function(parts, sender)
+        if sender ~= UnitName("player") then
+            local remoteVersion = parts[2]
+            if remoteVersion then
+                -- Si recibimos una versión superior a la nuestra
+                if CompareVersions(remoteVersion, AT.Version) == 1 then
+                    MP:ShowVersionWarning()
+                end
+                MP:Send("VERSION_REP;" .. AT.Version)
+            end
+        end
+    end,
+    ["VERSION_REP"] = function(parts, sender)
+        if sender ~= UnitName("player") then
+            local remoteVersion = parts[2]
+            if remoteVersion and CompareVersions(remoteVersion, AT.Version) == 1 then
+                MP:ShowVersionWarning()
+            end
         end
     end,
     ["JOIN"] = function(parts, sender, originalSender)
@@ -159,21 +220,29 @@ local CommandHandlers = {
         end
     end,
     ["QUESTION"] = function(parts, sender)
-        MP:OnQuestionReceived(parts)
+        if MP.CurrentState == MP.GameState.PLAYING and sender == MP.LeaderName then
+            MP:OnQuestionReceived(parts)
+        end
     end,
     ["RESULT_CORRECT"] = function(parts, sender)
-        local pName = parts[2]
-        local correctIndex = tonumber(parts[3])
-        local remaining = tonumber(parts[4])
-        if correctIndex then MP:ShowResult(correctIndex, pName, remaining) end
+        if MP.CurrentState == MP.GameState.PLAYING and sender == MP.LeaderName then
+            local pName = parts[2]
+            local correctIndex = tonumber(parts[3])
+            local remaining = tonumber(parts[4])
+            if correctIndex then MP:ShowResult(correctIndex, pName, remaining) end
+        end
     end,
     ["TIMEOUT"] = function(parts, sender)
-        local correctIndex = tonumber(parts[2])
-        local remaining = tonumber(parts[3])
-        if correctIndex then MP:ShowResult(correctIndex, nil, remaining) end
+        if MP.CurrentState == MP.GameState.PLAYING and sender == MP.LeaderName then
+            local correctIndex = tonumber(parts[2])
+            local remaining = tonumber(parts[3])
+            if correctIndex then MP:ShowResult(correctIndex, nil, remaining) end
+        end
     end,
     ["GAME_OVER"] = function(parts, sender)
-        MP:ShowGameEnd(parts[2])
+        if MP.CurrentState == MP.GameState.PLAYING and sender == MP.LeaderName then
+            MP:ShowGameEnd(parts[2])
+        end
     end,
     ["RETURN_TO_LOBBY"] = function(parts, sender)
         if sender == MP.LeaderName then
@@ -288,6 +357,7 @@ function MP:NextQuestion()
      
      MP.RoundEnded = false
      MP.LastWinnerName = nil
+     MP.RoundAnswers = {}
      
      local qDB = AT.QuestionDB
      local filteredDB = {}
@@ -333,6 +403,11 @@ end
 
 function MP:ValidateAnswer(player, index)
     if MP.RoundEnded then return end
+    
+    MP.RoundAnswers = MP.RoundAnswers or {}
+    if MP.RoundAnswers[player] then return end -- El jugador ya respondió
+    MP.RoundAnswers[player] = true
+
     if index == 1 then
         MP.RoundEnded = true
         MP.LastWinnerName = player
@@ -345,6 +420,15 @@ function MP:ValidateAnswer(player, index)
         MP.NextQTimer = C_Timer.NewTimer(MP.ResultPhaseDuration, function() MP:NextQuestion() end)
     else
         MP:Send("RESULT_WRONG;"..player)
+        
+        -- Contar cuántos han respondido
+        local count = 0
+        for _ in pairs(MP.RoundAnswers) do count = count + 1 end
+        
+        if count >= #MP.LobbyMembers then
+            if MP.RoundTimer then MP.RoundTimer:Cancel() end
+            MP:HandleTimeout()
+        end
     end
 end
 
@@ -429,7 +513,7 @@ end
 
 function MP:InviteGroup()
     if IsInGroup() then
-        MP:Send("INVITE;" .. UnitName("player"))
+        MP:Send("INVITE;" .. AT.Version)
     else
         print(AT.L["You are not in a group."])
     end

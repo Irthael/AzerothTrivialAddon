@@ -1,8 +1,10 @@
 local addonName, AT = ...
 local _G = _G
 local pairs, ipairs, table, math, string = _G.pairs, _G.ipairs, _G.table, _G.math, _G.string
-local GetTime, C_Timer, UnitName, IsInGroup, GetLocale = _G.GetTime, _G.C_Timer, _G.UnitName, _G.IsInGroup, _G.GetLocale
+local GetTime, C_Timer, UnitName, IsInGroup, GetLocale, C_AddOns = _G.GetTime, _G.C_Timer, _G.UnitName, _G.IsInGroup, _G.GetLocale, _G.C_AddOns
 local CreateFrame, UIParent, PlaySound, PlaySoundFile, StopSound = _G.CreateFrame, _G.UIParent, _G.PlaySound, _G.PlaySoundFile, _G.StopSound
+
+AT.Version = C_AddOns.GetAddOnMetadata(addonName, "Version") or "1.0.0"
 local UISpecialFrames, StaticPopupDialogs, SlashCmdList = _G.UISpecialFrames, _G.StaticPopupDialogs, _G.SlashCmdList
 local tonumber, tostring, math_random = _G.tonumber, _G.tostring, _G.math.random
 local UIErrorsFrame = _G.UIErrorsFrame
@@ -11,6 +13,69 @@ local questionDB = AT.QuestionDB
 local currentRound = nil
 local optionButtons = {}
 local frame
+
+function AT:StopCurrentSound()
+    if AT.CurrentSoundHandle then
+        StopSound(AT.CurrentSoundHandle)
+        AT.CurrentSoundHandle = nil
+    end
+end
+
+local function ForcePlay(soundID, isFile)
+    AT:StopCurrentSound()
+    local success, handle
+    if isFile then
+        success, handle = PlaySoundFile(soundID, "Master")
+    else
+        success, handle = PlaySound(soundID, "Master", true)
+    end
+    if success then
+        AT.CurrentSoundHandle = handle
+    end
+end
+
+function AT:GetLocaleData(qData)
+    local loc = GetLocale()
+    if loc == "esMX" then loc = "esES" end
+    if qData[loc] then
+        return qData[loc]
+    end
+    return qData["enUS"] or qData
+end
+
+function AT:ShuffleTable(t)
+    if not t then return end
+    for i = #t, 2, -1 do
+        local j = math_random(i)
+        t[i], t[j] = t[j], t[i]
+    end
+end
+
+function AT:UpdateEscapeConfig(enable)
+    local frames = {"ATModeSelectFrame", "ATLobbyFrame", "ATMPGameFrame", "AzerothTrivialFrame"}
+    for _, frameName in ipairs(frames) do
+        local found = false
+        local foundIndex = nil
+        for i, name in ipairs(UISpecialFrames) do
+            if name == frameName then
+                found = true
+                foundIndex = i
+                break
+            end
+        end
+        
+        if enable then
+            if not found then
+                table.insert(UISpecialFrames, frameName)
+            end
+        else
+            if found then
+                table.remove(UISpecialFrames, foundIndex)
+            end
+        end
+    end
+end
+
 
 local dbFrame = CreateFrame("Frame")
 dbFrame:RegisterEvent("ADDON_LOADED")
@@ -81,6 +146,9 @@ frame:EnableMouse(true)
 frame:RegisterForDrag("LeftButton")
 frame:SetScript("OnDragStart", frame.StartMoving)
 frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+frame:SetScript("OnHide", function()
+    AT:StopCurrentSound()
+end)
 frame:Hide()
 
 frame.title = frame:CreateFontString(nil, "OVERLAY")
@@ -127,42 +195,7 @@ btnBack:SetScript("OnClick", function()
     AT.ModeFrame:Show()
 end)
 
-function AT:StopCurrentSound()
-    if AT.CurrentSoundHandle then
-        StopSound(AT.CurrentSoundHandle)
-        AT.CurrentSoundHandle = nil
-    end
-end
 
-local function ForcePlay(soundID, isFile)
-    AT:StopCurrentSound()
-    local success, handle
-    if isFile then
-        success, handle = PlaySoundFile(soundID, "Master")
-    else
-        success, handle = PlaySound(soundID, "Master", true)
-    end
-    if success then
-        AT.CurrentSoundHandle = handle
-    end
-end
-
-function AT:GetLocaleData(qData)
-    local loc = GetLocale()
-    if loc == "esMX" then loc = "esES" end
-    if qData[loc] then
-        return qData[loc]
-    end
-    return qData["enUS"] or qData
-end
-
-function AT:ShuffleTable(t)
-    if not t then return end
-    for i = #t, 2, -1 do
-        local j = math_random(i)
-        t[i], t[j] = t[j], t[i]
-    end
-end
 
 local function ResetButtons()
     for _, btn in ipairs(optionButtons) do
@@ -310,30 +343,7 @@ end)
 
 modeFrame:SetSize(250, 190)
 
-function AT:UpdateEscapeConfig(enable)
-    local frames = {"ATModeSelectFrame", "ATLobbyFrame", "ATMPGameFrame", "AzerothTrivialFrame"}
-    for _, frameName in ipairs(frames) do
-        local found = false
-        local foundIndex = nil
-        for i, name in ipairs(UISpecialFrames) do
-            if name == frameName then
-                found = true
-                foundIndex = i
-                break
-            end
-        end
-        
-        if enable then
-            if not found then
-                table.insert(UISpecialFrames, frameName)
-            end
-        else
-            if found then
-                table.remove(UISpecialFrames, foundIndex)
-            end
-        end
-    end
-end
+
 
 SLASH_AZEROTHTRIVIAL1 = "/at"
 SlashCmdList["AZEROTHTRIVIAL"] = function(msg)

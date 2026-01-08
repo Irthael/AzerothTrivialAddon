@@ -302,22 +302,29 @@ function MP:ShowResult(correctIndex, winnerName, remaining)
 end
 
 local timerBar = CreateFrame("StatusBar", nil, gameFrame)
-timerBar:SetSize(300, 10)
+timerBar:SetSize(300, 15) -- Aumentado un poco el alto para que el texto quepa mejor
 timerBar:SetPoint("BOTTOM", 0, 10)
 timerBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
 timerBar:SetStatusBarColor(0, 1, 0)
 timerBar:SetMinMaxValues(0, 10)
 timerBar:SetValue(10)
 
+local timerText = timerBar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+timerText:SetPoint("CENTER", timerBar, "CENTER", 0, 0)
+timerBar.text = timerText
+
 MP.TimerBar = timerBar
 
 function MP:StartTimer(duration)
     timerBar:SetMinMaxValues(0, duration)
     timerBar:SetValue(duration)
+    timerBar.text:SetText(math.ceil(duration))
     local elapsed = 0
     timerBar:SetScript("OnUpdate", function(self, elaspedTime)
         elapsed = elapsed + elaspedTime
-        self:SetValue(duration - elapsed)
+        local remaining = duration - elapsed
+        self:SetValue(remaining)
+        self.text:SetText(math.max(0, math.ceil(remaining)))
         if elapsed >= duration then
             self:SetScript("OnUpdate", nil)
         end

@@ -2,7 +2,7 @@
 ## Title: Azeroth Trivia
 ## Notes: World of Warcraft Trivia Addon. Write /at to open trivia.
 ## Author: Irthael
-## Version: 1.0
+## Version: 1.0.2
 ## SavedVariables: AzerothTriviaDB
 
 Locales\enUS.lua

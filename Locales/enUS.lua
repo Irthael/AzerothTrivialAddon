@@ -60,3 +60,9 @@ L["About Message"] = "Do you like the addon? You can contribute your questions o
 L["Error: Question %s not found!"] = "Error: Question %s not found!"
 L["Leader has left the group. Game ended."] = "Leader has left the group. Game ended."
 L["You are not in a group."] = "You are not in a group."
+L["Version mismatch! Host version: %s, Your version: %s"] = "Version mismatch! Host version: %s, Your version: %s"
+L["You cannot join this game because your version does not match the host's version."] = "You cannot join this game because your version does not match the host's version."
+L["An inferior version of Azeroth Trivia has been detected, please update."] = "An inferior version of Azeroth Trivia has been detected, please update."
+L["Your version is: %s"] = "Your version is: %s"
+
+
