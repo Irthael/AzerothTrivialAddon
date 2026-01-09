@@ -64,5 +64,9 @@ L["Version mismatch! Host version: %s, Your version: %s"] = "Version mismatch! H
 L["You cannot join this game because your version does not match the host's version."] = "You cannot join this game because your version does not match the host's version."
 L["An inferior version of Azeroth Trivia has been detected, please update."] = "An inferior version of Azeroth Trivia has been detected, please update."
 L["Your version is: %s"] = "Your version is: %s"
+L["Test Sound"] = "Test Sound"
+L["Sound Test Info"] = "The sound of this addon is played through the Master channel. Click the button to ensure you hear the sounds; if not, check your sound settings."
+L["Sound Test Title"] = "Sound Test"
+L["Test Button"] = "Play Test Sound"
 
 

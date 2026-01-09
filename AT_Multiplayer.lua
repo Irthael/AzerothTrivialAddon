@@ -37,7 +37,7 @@ end
 
 function MP:ShowVersionWarning()
     local now = GetTime()
-    -- Solo mostrar el mensaje si han pasado más de 60 segundos desde el último aviso
+
     if (now - (MP.lastWarningTime or 0)) < 60 then return end
     MP.lastWarningTime = now
     
@@ -87,7 +87,6 @@ mpFrame:SetScript("OnEvent", function(self, event, ...)
             end
         end
     elseif event == "GROUP_JOINED" then
-        -- Cuando nos unimos a un grupo, avisamos de nuestra versión
         C_Timer.After(2, function()
             MP:Send("VERSION_CHECK;" .. AT.Version)
         end)
@@ -130,7 +129,7 @@ local CommandHandlers = {
         if sender ~= UnitName("player") then
             local remoteVersion = parts[2]
             if remoteVersion then
-                -- Si recibimos una versión superior a la nuestra
+                
                 if CompareVersions(remoteVersion, AT.Version) == 1 then
                     MP:ShowVersionWarning()
                 end
@@ -312,18 +311,31 @@ function MP:HandleMessage(msg, sender)
     end
 end
 
+function MP:PrepareSessionQuestions()
+    local qDB = AT.QuestionDB
+    local filteredDB = {}
+    local allowed = (AT.db and AT.db.allowedTypes) or {text = true, voice = true, music = true}
+    
+    for _, q in ipairs(qDB) do
+        if allowed[q.type] then
+            table.insert(filteredDB, q)
+        end
+    end
+    
+    if #filteredDB == 0 then
+        filteredDB = { unpack(qDB) }
+    end
+
+    AT:ShuffleTable(filteredDB)
+    MP.SessionPool = filteredDB
+end
+
 function MP:StartGame()
     if not MP.IsLeader then return end
     MP:ClearTimers()
     
-    local qDB = AT.QuestionDB
-    local availableCount = 0
-    local allowed = (AT.db and AT.db.allowedTypes) or {text = true, voice = true, music = true}
-    for _, q in ipairs(qDB) do
-        if allowed[q.type] then
-            availableCount = availableCount + 1
-        end
-    end
+    MP:PrepareSessionQuestions()
+    local availableCount = #MP.SessionPool
     
     local selected = AT.db.numMultiplayerQuestions or 10
     if selected == 0 or selected > availableCount then
@@ -350,7 +362,7 @@ function MP:NextQuestion()
      if not MP.IsLeader then return end
      AT:StopCurrentSound()
      MP.CurrentQuestionIndex = MP.CurrentQuestionIndex + 1
-     if MP.CurrentQuestionIndex > MP.TotalQuestions then
+     if MP.CurrentQuestionIndex > MP.TotalQuestions or not MP.SessionPool[MP.CurrentQuestionIndex] then
           MP:EndGame()
           return
      end
@@ -359,21 +371,7 @@ function MP:NextQuestion()
      MP.LastWinnerName = nil
      MP.RoundAnswers = {}
      
-     local qDB = AT.QuestionDB
-     local filteredDB = {}
-     local allowed = (AT.db and AT.db.allowedTypes) or {text = true, voice = true, music = true}
-     
-     for _, q in ipairs(qDB) do
-         if allowed[q.type] then
-             table.insert(filteredDB, q)
-         end
-     end
-     
-     if #filteredDB == 0 then
-         filteredDB = qDB
-     end
-
-     local qData = filteredDB[math.random(#filteredDB)]
+     local qData = MP.SessionPool[MP.CurrentQuestionIndex]
      MP.CurrentQuestionData = qData
      
      local duration = AT.db.answerTime or 30
@@ -405,7 +403,7 @@ function MP:ValidateAnswer(player, index)
     if MP.RoundEnded then return end
     
     MP.RoundAnswers = MP.RoundAnswers or {}
-    if MP.RoundAnswers[player] then return end -- El jugador ya respondió
+    if MP.RoundAnswers[player] then return end 
     MP.RoundAnswers[player] = true
 
     if index == 1 then
@@ -421,7 +419,6 @@ function MP:ValidateAnswer(player, index)
     else
         MP:Send("RESULT_WRONG;"..player)
         
-        -- Contar cuántos han respondido
         local count = 0
         for _ in pairs(MP.RoundAnswers) do count = count + 1 end
         

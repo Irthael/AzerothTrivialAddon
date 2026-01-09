@@ -1,7 +1,7 @@
 local addonName, AT = ...
 local _G = _G
 local CreateFrame, Minimap, GameTooltip, GetCursorPosition = _G.CreateFrame, _G.Minimap, _G.GameTooltip, _G.GetCursorPosition
-local math, cos, sin, deg, atan2 = _G.math, _G.math.cos, _G.math.sin, _G.math.deg, _G.math.atan2
+local math, cos, sin, deg, rad, atan2 = _G.math, _G.math.cos, _G.math.sin, _G.math.deg, _G.math.rad, _G.math.atan2
 
 function AT:InitializeMinimapIcon()
     local db = AT.db.minimap
@@ -40,7 +40,7 @@ function AT:InitializeMinimapIcon()
     icon:SetScript("OnLeave", function() GameTooltip:Hide() end)
     
     local function UpdatePosition()
-        local angle = db.minimapPos or 45
+        local angle = rad(db.minimapPos or 45)
         local radius = 102
         local x = radius * cos(angle)
         local y = radius * sin(angle)

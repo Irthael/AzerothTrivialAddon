@@ -302,7 +302,7 @@ function MP:ShowResult(correctIndex, winnerName, remaining)
 end
 
 local timerBar = CreateFrame("StatusBar", nil, gameFrame)
-timerBar:SetSize(300, 15) -- Aumentado un poco el alto para que el texto quepa mejor
+timerBar:SetSize(300, 15)
 timerBar:SetPoint("BOTTOM", 0, 10)
 timerBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
 timerBar:SetStatusBarColor(0, 1, 0)

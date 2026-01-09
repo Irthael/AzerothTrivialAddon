@@ -76,7 +76,7 @@ AT.QuestionDB = {
         enUS = { answer = "The Jailer", false_1 = "Argus the Unmaker", false_2 = "Sargeras", false_3 = "Archimonde" },
     },
     {
-        uid = 19, type = "voice", id = 171804,  
+        uid = 19, type = "voice", id = 1860623,  
         enUS = { answer = "Gallywix", false_1 = "Mekkatorque", false_2 = "Anduin", false_3 = "Nathanos" },
     },
     {
@@ -92,12 +92,6 @@ AT.QuestionDB = {
         enUS = { answer = "Murloc", false_1 = "Gnoll", false_2 = "Kobold", false_3 = "Trogg" },
     },
     
-
-
-
-
-    --  
-
     -- MUSIC
     {
         uid = 23, type = "music", id = 53203,  
@@ -195,12 +189,14 @@ AT.QuestionDB = {
         esES = { answer = "Tanaris", false_1 = "Silithus", false_2 = "Tierras Inhóspitas", false_3 = "Las Mil Agujas" },
     },
 
-    --LORE
     {
-        uid = 43, type = "text",
-        enUS = { question = "What caused the fall of Gnomeregan?", answer = "Radioactive leak", false_1 = "Demon invasion", false_2 = "Trogg diplomacy", false_3 = "Scourge attack" },
-        esES = { question = "¿Qué causó la caída de Gnomeregan?", answer = "Filtración radiactiva", false_1 = "Invasión demoníaca", false_2 = "Diplomacia Trogg", false_3 = "Ataque de la Plaga" }
+        uid = 42, type = "music", id = 441776,  
+        enUS = { answer = "Tanaris", false_1 = "Silithus", false_2 = "Badlands", false_3 = "Thousand Needles" },
+        esES = { answer = "Tanaris", false_1 = "Silithus", false_2 = "Tierras Inhóspitas", false_3 = "Las Mil Agujas" },
     },
+
+    --LORE
+    
     {
         uid = 44, type = "text",
         enUS = { question = "Which dragon appears on the original Burning Crusade loading screen?", answer = "None", false_1 = "Netherwing", false_2 = "Sindragosa", false_3 = "Alexstrasza" },
@@ -327,7 +323,9 @@ AT.QuestionDB = {
         enUS = { question = "Where was the entrance to Naxxramas originally located in Vanilla?", answer = "Eastern Plaguelands", false_1 = "Western Plaguelands", false_2 = "Deadwind Pass", false_3 = "Alterac Mountains" },
         esES = { question = "¿En qué zona se encontraba la entrada a Naxxramas originalmente en Vanilla?", answer = "Tierras de la Peste del Este", false_1 = "Tierras de la Peste del Oeste", false_2 = "Paso de la Muerte", false_3 = "Montañas de Alterac" }
     },
-    
-
-
+    {
+        uid = 69, type = "text",
+        enUS = { question = "What caused the fall of Gnomeregan?", answer = "Radioactive leak", false_1 = "Demon invasion", false_2 = "Trogg diplomacy", false_3 = "Scourge attack" },
+        esES = { question = "¿Qué causó la caída de Gnomeregan?", answer = "Filtración radiactiva", false_1 = "Invasión demoníaca", false_2 = "Diplomacia Trogg", false_3 = "Ataque de la Plaga" }
+    },
 }

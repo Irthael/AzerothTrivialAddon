@@ -52,7 +52,7 @@ function AT:ShuffleTable(t)
 end
 
 function AT:UpdateEscapeConfig(enable)
-    local frames = {"ATModeSelectFrame", "ATLobbyFrame", "ATMPGameFrame", "AzerothTrivialFrame"}
+    local frames = {"ATModeSelectFrame", "ATLobbyFrame", "ATMPGameFrame", "AzerothTrivialFrame", "ATSoundTestFrame"}
     for _, frameName in ipairs(frames) do
         local found = false
         local foundIndex = nil
@@ -81,12 +81,11 @@ local dbFrame = CreateFrame("Frame")
 dbFrame:RegisterEvent("ADDON_LOADED")
 dbFrame:SetScript("OnEvent", function(self, event, loadedAddonName)
     if loadedAddonName == addonName then
-        -- Initialize empty DB
+
         if not AzerothTriviaDB then AzerothTriviaDB = {} end
         
-        -- Default Values Migration/Initialization
         if AzerothTriviaDB.intermissionTime == nil then AzerothTriviaDB.intermissionTime = 10 end
-        if AzerothTriviaDB.closeWithEscape == nil then AzerothTriviaDB.closeWithEscape = true end
+        if AzerothTriviaDB.closeWithEscape == nil then AzerothTriviaDB.closeWithEscape = false end
         if AzerothTriviaDB.numMultiplayerQuestions == nil then AzerothTriviaDB.numMultiplayerQuestions = 10 end
         if AzerothTriviaDB.answerTime == nil then AzerothTriviaDB.answerTime = 30 end
         
@@ -97,7 +96,7 @@ dbFrame:SetScript("OnEvent", function(self, event, loadedAddonName)
                 music = true,
             }
         else
-            -- Ensure all subtypes exist
+            
             if AzerothTriviaDB.allowedTypes.text == nil then AzerothTriviaDB.allowedTypes.text = true end
             if AzerothTriviaDB.allowedTypes.voice == nil then AzerothTriviaDB.allowedTypes.voice = true end
             if AzerothTriviaDB.allowedTypes.music == nil then AzerothTriviaDB.allowedTypes.music = true end
@@ -115,7 +114,6 @@ dbFrame:SetScript("OnEvent", function(self, event, loadedAddonName)
 
         AT.db = AzerothTriviaDB
         
-        -- Index questions for fast access
         AT.QuestionIndex = {}
         for _, q in ipairs(questionDB) do
             AT.QuestionIndex[q.uid] = q
@@ -266,9 +264,9 @@ local function OnAnswerSelected(clickedBtn)
     end
 
     if clickedBtn.isCorrect then
-        ForcePlay(888, false)
+        ForcePlay(888, true)
     else
-        ForcePlay(896, false)
+        ForcePlay(896, true)
     end
     
     btnNext:Show()
@@ -341,7 +339,55 @@ btnSettings:SetScript("OnClick", function()
     AT:OpenSettings()
 end)
 
-modeFrame:SetSize(250, 190)
+local btnTestSound = CreateFrame("Button", nil, modeFrame, "GameMenuButtonTemplate")
+btnTestSound:SetSize(160, 30)
+btnTestSound:SetPoint("TOP", btnSettings, "BOTTOM", 0, -10)
+btnTestSound:SetText(AT.L["Test Sound"])
+btnTestSound:SetScript("OnClick", function()
+    modeFrame:Hide()
+    AT.SoundTestFrame:Show()
+end)
+
+modeFrame:SetSize(250, 230)
+
+AT.SoundTestFrame = CreateFrame("Frame", "ATSoundTestFrame", UIParent, "BasicFrameTemplateWithInset")
+local soundFrame = AT.SoundTestFrame
+soundFrame:SetSize(320, 200)
+soundFrame:SetPoint("CENTER")
+soundFrame:SetMovable(true)
+soundFrame:EnableMouse(true)
+soundFrame:RegisterForDrag("LeftButton")
+soundFrame:SetScript("OnDragStart", soundFrame.StartMoving)
+soundFrame:SetScript("OnDragStop", soundFrame.StopMovingOrSizing)
+soundFrame:Hide()
+
+soundFrame.title = soundFrame:CreateFontString(nil, "OVERLAY")
+soundFrame.title:SetFontObject("GameFontHighlight")
+soundFrame.title:SetPoint("CENTER", soundFrame.TitleBg, "CENTER", 0, 0)
+soundFrame.title:SetText(AT.L["Sound Test Title"])
+
+local soundInfo = soundFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+soundInfo:SetPoint("TOP", 0, -40)
+soundInfo:SetSize(280, 80)
+soundInfo:SetJustifyH("CENTER")
+soundInfo:SetText(AT.L["Sound Test Info"])
+
+local btnPlayTest = CreateFrame("Button", nil, soundFrame, "GameMenuButtonTemplate")
+btnPlayTest:SetSize(200, 35)
+btnPlayTest:SetPoint("TOP", soundInfo, "BOTTOM", 0, -5)
+btnPlayTest:SetText(AT.L["Test Button"])
+btnPlayTest:SetScript("OnClick", function()
+    ForcePlay(1689248, true)
+end)
+
+local btnBackTest = CreateFrame("Button", nil, soundFrame, "GameMenuButtonTemplate")
+btnBackTest:SetSize(80, 25)
+btnBackTest:SetPoint("BOTTOMLEFT", 10, 10)
+btnBackTest:SetText(AT.L["Back"])
+btnBackTest:SetScript("OnClick", function()
+    soundFrame:Hide()
+    AT.ModeFrame:Show()
+end)
 
 
 
